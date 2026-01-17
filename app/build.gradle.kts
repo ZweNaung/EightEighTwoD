@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -68,15 +72,14 @@ dependencies {
     //Navigation
     implementation(libs.androidx.navigation.compose)
 
-
     // Retrofit
     implementation(libs.retrofit)
 
-    // KotlinX Serialization Converter
-    implementation(libs.retrofit2.kotlinx.serialization.converter)
-
-    // KotlinX Serialization JSON
+    // Serialization JSON library
     implementation(libs.kotlinx.serialization.json)
+
+    // Retrofit Converter library
+    implementation(libs.converter.kotlinx.serialization)
 
     // Kotlin core libs for serialization
     implementation(libs.kotlinx.serialization.core)
@@ -90,6 +93,12 @@ dependencies {
     //coil
     implementation(libs.coil.compose)
 
+    //icon
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 }

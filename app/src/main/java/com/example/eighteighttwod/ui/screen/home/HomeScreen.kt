@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column // Foundation က လာရမယ်
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,49 +14,54 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    liveViewModel: LiveViewModel = hiltViewModel()
+) {
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val headerHeight = screenHeight * 0.25f
 
 
+    val liveState by liveViewModel.state.collectAsStateWithLifecycle()
+    val liveData = liveState.liveData
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(14.dp)
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,12 +79,6 @@ fun HomeScreen() {
                 Row(
                     modifier = Modifier
                         .fillMaxSize(),
-//                        .fillMaxWidth()
-//                        .background(Color.Green.copy(0.2f))
-//                        .fillMaxHeight(0.25f)
-//                        .graphicsLayer {
-//                            translationY = size.height * -0.25f
-//                        },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -96,12 +95,13 @@ fun HomeScreen() {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "00",
+                                text = liveData?.twoD ?: "--",
                                 fontSize = 100.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.ExtraBold,
                             )
-                            Text("Time : 12:05:12")
+                            Text(
+                                text = "Time : ${liveData?.updatedAt ?: "--"}")
                         }
                     }
                     //Live Set & Value
@@ -124,7 +124,7 @@ fun HomeScreen() {
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "123456",
+                                text = liveData?.set ?: "--",
                                 fontSize = 18.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Normal
@@ -137,7 +137,7 @@ fun HomeScreen() {
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "123456",
+                                text = liveData?.value ?: "--",
                                 fontSize = 18.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Normal

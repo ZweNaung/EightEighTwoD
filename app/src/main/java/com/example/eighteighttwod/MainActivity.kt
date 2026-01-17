@@ -21,10 +21,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.eighteighttwod.ui.navigation.BottomNavItems
 import com.example.eighteighttwod.ui.navigation.NavGraph
 import com.example.eighteighttwod.ui.theme.EighteighttwodTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         enableEdgeToEdge()
         setContent {
             EighteighttwodTheme {
@@ -36,7 +40,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val padding = innerPadding
                     Box(modifier = Modifier.padding(innerPadding)){
-                        NavGraph(navController)
+                        NavGraph(
+                            navController = navController,
+                        )
                     }
                 }
             }
