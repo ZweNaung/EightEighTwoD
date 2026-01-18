@@ -1,5 +1,7 @@
 package com.example.eighteighttwod.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 
 import androidx.navigation.NavHostController
@@ -12,6 +14,7 @@ import com.example.eighteighttwod.ui.screen.lucky.LuckyScreen
 import com.example.eighteighttwod.ui.screen.omen.OmenScreen
 import com.example.eighteighttwod.ui.screen.other.OtherScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -22,9 +25,9 @@ fun NavGraph(
     ){
         composable(route = BottomNavItems.Home.route){ HomeScreen() }
         composable(route = BottomNavItems.Omen.route){ OmenScreen() }
-//        composable(route = BottomNavItems.History.route){ HistoryScreen() }
+        composable(route = BottomNavItems.History.route){ HistoryScreen() }
         composable(route = BottomNavItems.Dream.route){ DreamScreen() }
         composable(route = BottomNavItems.Lucky.route){ LuckyScreen() }
-        composable(route = BottomNavItems.Other.route){ OtherScreen() }
+        composable(route = BottomNavItems.Other.route){ OtherScreen(navController) }
     }
 }

@@ -1,6 +1,8 @@
 package com.example.eighteighttwod.ui.screen.home
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,8 +42,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(
@@ -101,7 +108,7 @@ fun HomeScreen(
                                 fontWeight = FontWeight.ExtraBold,
                             )
                             Text(
-                                text = "Time : ${liveData?.updatedAt ?: "--"}")
+                                text = "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}")
                         }
                     }
                     //Live Set & Value
@@ -333,6 +340,23 @@ fun TableCardDesign(
 }
 
 
+//hh:mm:ss
+@RequiresApi(Build.VERSION_CODES.O)
+fun String.toFormattedTime(): String {
+    return try {
+        // 1. String ကို UTC အချိန်အဖြစ် ဖတ်မယ်
+        val instant = Instant.parse(this)
+
+        // 2. Format သတ်မှတ်မယ် (hh = 12နာရီ, HH = 24နာရီ, a = AM/PM)
+        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.ENGLISH)
+            .withZone(ZoneId.systemDefault()) // ဖုန်းရဲ့ Local Time (Myanmar Time) ကို ယူမယ်
+
+        formatter.format(instant)
+    } catch (e: Exception) {
+        "Unknown Time" // Error တက်ရင် ပြမယ့်စာ
+    }
+}
+
 //12:00 and 4:30
 @Composable
 fun NumberCardWidget(
@@ -467,14 +491,11 @@ fun CircleBoxConstraint(
 
         CircleBg(
             modifier = Modifier
-//                .size(circleWidth, circleHeight)
-//                .fillMaxSize()
                 .width(circleWidth)
                 .fillMaxHeight()
                 .align(Alignment.TopStart)
                 .offset(
                     x = -circleWidth * 0.35f,
-//                    y = -circleHeight * 0.25f
                 )
                 .shadow(10.dp, CircleShape)
         )

@@ -2,6 +2,8 @@ package com.example.eighteighttwod.di
 
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.example.eighteighttwod.data.remote.api.LiveApiService
+import com.example.eighteighttwod.data.remote.api.OmenApiService
+import com.example.eighteighttwod.data.remote.api.TwoDHistoryApiService
 import com.example.eighteighttwod.utils.Constants // BASE_URL ရှိတဲ့နေရာ
 import dagger.Module
 import dagger.Provides
@@ -61,6 +63,18 @@ object NetworkModule {
     @Singleton
     fun provideLiveApiService(retrofit: Retrofit): LiveApiService {
         return retrofit.create(LiveApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOmenApiService(retrofit: Retrofit): OmenApiService{
+        return retrofit.create(OmenApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTwoDHistoryApiService(retrofit: Retrofit): TwoDHistoryApiService{
+        return retrofit.create(TwoDHistoryApiService::class.java)
     }
 
     // နောက်ပိုင်း TwoDHistory လိုချင်ရင် ဒီမှာ ထပ်ဖြည့်ရုံပဲ.
