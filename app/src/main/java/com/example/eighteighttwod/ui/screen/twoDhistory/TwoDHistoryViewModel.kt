@@ -34,12 +34,7 @@ class TwoDHistoryViewModel(private val repository: TwoDHistoryRepository) : View
             when (val result = repository.getAllTwoDHistory()) {
                 is Resource.Success -> {
                     val dataList = result.data ?: emptyList()
-                    Log.d("TwoDHistoryVM", "API Success - Total items: ${dataList.size}")
                     dataList.take(5).forEach { item ->
-                        Log.d(
-                            "TwoDHistoryVM",
-                            "Date: ${item.date}, Child count: ${item.child.size}"
-                        )
                         item.child.forEach { child ->
                             Log.d("TwoDHistoryVM", "   - twoD: ${child.twoD}")
                         }
@@ -52,7 +47,6 @@ class TwoDHistoryViewModel(private val repository: TwoDHistoryRepository) : View
                 }
 
                 is Resource.Error -> {
-                    Log.e("TwoDHistoryVM", "API Error: ${result.message}")
                     _state.value = _state.value.copy(
                         isLoading = false,
                         error = result.message

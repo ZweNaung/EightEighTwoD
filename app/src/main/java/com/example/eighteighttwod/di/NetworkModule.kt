@@ -1,9 +1,12 @@
 package com.example.eighteighttwod.di
 
+import android.annotation.SuppressLint
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.example.eighteighttwod.data.remote.api.LiveApiService
+import com.example.eighteighttwod.data.remote.api.LuckyApiService
 import com.example.eighteighttwod.data.remote.api.OmenApiService
 import com.example.eighteighttwod.data.remote.api.TwoDHistoryApiService
+import com.example.eighteighttwod.data.remote.api.UpdateResultApiService
 import com.example.eighteighttwod.utils.Constants // BASE_URL ရှိတဲ့နေရာ
 import dagger.Module
 import dagger.Provides
@@ -16,6 +19,11 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.engineio.client.transports.WebSocket
+import okhttp3.Protocol
+import java.net.URI
 
 @Module
 @InstallIn(SingletonComponent::class) // App တစ်ခုလုံးမှာ သုံးမှာမို့ SingletonComponent သုံးတယ်
@@ -40,6 +48,14 @@ object NetworkModule {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("Connection", "close")
+                    .build()
+                chain.proceed(request)
+            }
+            .retryOnConnectionFailure(true)
+            .protocols(listOf(Protocol.HTTP_1_1))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -77,10 +93,40 @@ object NetworkModule {
         return retrofit.create(TwoDHistoryApiService::class.java)
     }
 
-    // နောက်ပိုင်း TwoDHistory လိုချင်ရင် ဒီမှာ ထပ်ဖြည့်ရုံပဲ.
-    // @Provides
-    // @Singleton
-    // fun provideTwoDApiService(retrofit: Retrofit): TwoDHistoryApiService {
-    //     return retrofit.create(TwoDHistoryApiService::class.java)
-    // }
+    @Provides
+    @Singleton
+    fun provideLuckyApiService(retrofit: Retrofit): LuckyApiService{
+        return retrofit.create(LuckyApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUpdateResultApiService(retrofit: Retrofit): UpdateResultApiService {
+        return retrofit.create(UpdateResultApiService::class.java)
+    }
+
+
+    @SuppressLint("SuspiciousIndentation")
+    @Provides
+    @Singleton
+    fun provideSocket(): Socket{
+        return try {
+            val uri =URI.create("http://mmsub.asia:8080")
+//            val uri =URI.create(Constants.BASE_URL)
+
+            val option = IO.Options.builder()
+                .setTransports(arrayOf("websocket"))
+                .setUpgrade(false) // Upgrade လုပ်စရာမလိုတော့ဘူး
+                .setReconnection(true)
+                .setReconnectionAttempts(Int.MAX_VALUE)
+                .setReconnectionDelay(1000)
+                .build()
+
+                IO.socket(uri,option)
+
+        }catch (e: Exception){
+            throw RuntimeException(e)
+        }
+    }
+
 }

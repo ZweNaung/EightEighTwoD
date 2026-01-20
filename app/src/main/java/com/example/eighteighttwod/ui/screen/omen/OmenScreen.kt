@@ -1,5 +1,7 @@
 package com.example.eighteighttwod.ui.screen.omen
 
+import android.R
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,10 +11,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -41,6 +45,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -48,6 +53,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun OmenScreen(
@@ -184,7 +191,7 @@ fun OmenItemCard(
 ) {
     Card(
         modifier = modifier
-            .border(1.dp, color = Color.Black.copy(3f), shape = RoundedCornerShape(12.dp))
+            .border(1.dp, color = Color.Black.copy(0.3f), shape = RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -200,38 +207,93 @@ fun OmenItemCard(
             Box(
                 modifier = Modifier
                     .background(Color(0xFFD4E0FC))
-                    .drawBehind{
-                        val strokeWidth =1.dp.toPx()
+                    .drawBehind {
+                        val strokeWidth = 1.dp.toPx()
                         val borderColor = Color.Black
 
                         drawLine(
                             color = borderColor,
-                            start = Offset(0f,size.height),
-                            end = Offset(size.width,size.height),
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height),
                             strokeWidth = strokeWidth
                         )
                     }
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
-            ){
-            Text(
-                text = name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(vertical = 3.dp, horizontal = 8.dp)
-            )
+            ) {
+                Text(
+                    text = name,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .padding(vertical = 3.dp, horizontal = 8.dp)
+                )
             }
-
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = imgUrl,
                 contentDescription = name,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
-                contentScale = ContentScale.Crop,
-                error = painterResource(id = android.R.drawable.ic_menu_report_image)
-            )
+                contentScale = ContentScale.Crop
+            ) {
+                // 👇 SubcomposeAsyncImage အထဲရောက်မှ painter ကို သိတာပါ
+                val state = painter.state
+
+                when (state) {
+                    // ၁။ Loading
+                    is AsyncImagePainter.State.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color(0xFFF0F0F0)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(30.dp),
+                                color = Color.Gray,
+                                strokeWidth = 3.dp
+                            )
+                        }
+                    }
+
+                    // ၂။ Error
+                    is AsyncImagePainter.State.Error -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color(0xFFEEEEEE)),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_menu_report_image),
+                                contentDescription = "Error",
+                                tint = Color.Red,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "ပုံမပေါ်လျှင်\nVPN ဖွင့်သုံးပေးပါ။",
+                                textAlign = TextAlign.Center,
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+
+                    // ၃။ Success
+                    else -> {
+                        Image(
+                            painter = painter, // 👈 ဒီမှာ imgUrl မဟုတ်ဘဲ painter ကို ထည့်ရပါတယ်
+                            contentDescription = name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+            }
         }
     }
 }

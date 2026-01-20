@@ -3,6 +3,21 @@ package com.example.eighteighttwod.ui.screen.home
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,30 +33,44 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -52,7 +81,8 @@ import java.util.Locale
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(
-    liveViewModel: LiveViewModel = hiltViewModel()
+    liveViewModel: LiveViewModel = hiltViewModel(),
+    updateResultViewModel: UpdateResultViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
@@ -62,6 +92,14 @@ fun HomeScreen(
 
     val liveState by liveViewModel.state.collectAsStateWithLifecycle()
     val liveData = liveState.liveData
+
+
+    val updateResultState by updateResultViewModel.state.collectAsStateWithLifecycle()
+
+    val morningData = updateResultState.updateResult.find { it.session == "12:01 PM" }
+    val eveningData = updateResultState.updateResult.find { it.session == "4:30 PM" }
+
+
 
     Box(
         modifier = Modifier
@@ -93,7 +131,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .weight(0.2f)
-                            .padding(start = 50.dp, top = 0.dp)
+                            .padding(start = 40.dp, top = 0.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -101,14 +139,12 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = liveData?.twoD ?: "--",
-                                fontSize = 100.sp,
-                                color = Color.Black,
-                                fontWeight = FontWeight.ExtraBold,
-                            )
-                            Text(
-                                text = "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}")
+                            DropDownTextAnimation(
+                                live2D = liveData?.twoD ?: "--",)
+                                Text( "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Light
+                                    )
                         }
                     }
                     //Live Set & Value
@@ -166,9 +202,9 @@ fun HomeScreen(
                 ){
                     NumberCardWidget(
                         time = "12:01 AM",
-                        towD = "28",
-                        set = "567268",
-                        value = "9766145",
+                        towD = morningData?.twoD ?: "--",
+                        set = morningData?.set ?: "--",
+                        value = morningData?.value ?: "--",
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -178,9 +214,9 @@ fun HomeScreen(
                 ){
                     NumberCardWidget(
                         time = "4:30 PM",
-                        towD = "08",
-                        set = "490838",
-                        value = "953245",
+                        towD = eveningData?.twoD ?: "--",
+                        set = eveningData?.set ?: "--",
+                        value = eveningData?.value ?: "--",
                     )
                 }
 
@@ -206,7 +242,52 @@ fun HomeScreen(
     }
 }
 
+@SuppressLint("DefaultLocale")
+@Composable
+fun DropDownTextAnimation(
+    live2D: String,
+) {
+    var visibility by remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        while (true) {
+            visibility = true
+            delay(5000) // ၅ စက္ကန့်ပြမယ်
+            visibility = false
+            delay(1000) // ၁ စက္ကန့်ဖျောက်မယ်
+        }
+    }
+
+    // Alpha (အလင်း/အမှောင်) ကို animate လုပ်မယ်
+    val alpha by animateFloatAsState(
+        targetValue = if (visibility) 1f else 0f, // True ဆို 1 (မြင်ရ), False ဆို 0 (မမြင်ရ)
+        animationSpec = tween(
+            // visible ဖြစ်ရင် (ပေါ်လာရင်) ၁ စက္ကန့်၊ ဖျောက်ရင် ၈၀၀ ms
+            durationMillis = if (visibility) 1000 else 800
+        ),
+        label = "Alpha Animation"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.wrapContentSize()
+    ) {
+        // AnimatedVisibility အစား Text မှာ modifier.alpha() ကို တိုက်ရိုက်သုံးလိုက်ပါ
+        Text(
+            text = live2D,
+            fontSize = 120.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.alpha(alpha), // 👈 ဒီနေရာမှာ alpha ထည့်လိုက်ရင် နေရာမပျောက်တော့ပါဘူး
+            style = TextStyle(
+                shadow = Shadow(
+                    color = Color.Gray,
+                    offset = Offset(5f, 10f),
+                    blurRadius = 15f
+                )
+            )
+        )
+    }
+}
 
 //Modern and Internet
 @Composable

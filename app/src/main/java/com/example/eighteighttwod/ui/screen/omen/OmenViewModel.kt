@@ -30,15 +30,10 @@ class OmenViewModel @Inject constructor(
 
             when(val result = repository.getOmen()){
                 is Resource.Success ->{
-                    Log.d("omeApi","Success : ${result.data}")
                     _state.update { it.copy(isLoading = false, liveData = result.data ?: emptyList(),error = null) }
                 }
                 is Resource.Error ->{
-                    Log.d("omeApi","Success : ${result.message}")
                     _state.update { it.copy(isLoading = false, error = result.message) }
-                }
-                is Resource.Loading ->{
-                    _state.update { it.copy(isLoading = true) }
                 }
                 else -> Unit
             }

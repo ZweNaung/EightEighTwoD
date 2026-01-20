@@ -63,6 +63,10 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.core.i18n)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.animation.core)
+    implementation(libs.androidx.compose.ui.geometry)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -103,4 +107,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+
+    //don't conflict with android's json
+    implementation ("io.socket:socket.io-client:2.1.0") {
+        exclude (group = "org.json", module = "json")
+    }
 }

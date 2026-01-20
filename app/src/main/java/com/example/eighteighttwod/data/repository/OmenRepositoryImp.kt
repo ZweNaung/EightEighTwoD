@@ -4,6 +4,7 @@ import com.example.eighteighttwod.data.remote.api.OmenApiService
 import com.example.eighteighttwod.data.remote.dto.OmenResponseDto
 import com.example.eighteighttwod.utils.Resource
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class OmenRepositoryImp @Inject constructor(
     private val api: OmenApiService
@@ -18,8 +19,8 @@ class OmenRepositoryImp @Inject constructor(
             }
 
         }catch (e: Exception){
+            if (e is CancellationException) throw e
             Resource.Error(message = e.message ?: "Unknown Error")
         }
     }
-
 }

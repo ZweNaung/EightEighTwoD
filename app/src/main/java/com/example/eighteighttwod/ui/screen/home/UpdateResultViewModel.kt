@@ -1,13 +1,11 @@
 package com.example.eighteighttwod.ui.screen.home
 
-import android.util.Log
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eighteighttwod.data.remote.dto.UpdateResultDto
-import com.example.eighteighttwod.data.repository.LiveRepository
+import com.example.eighteighttwod.data.repository.UpdateResultRepository
 import com.example.eighteighttwod.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,33 +13,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class LiveViewModel @Inject constructor(
-    private val repository: LiveRepository,
-    ): ViewModel() {
+class UpdateResultViewModel @Inject constructor(
+    private val repository: UpdateResultRepository,
+) : ViewModel() {
 
-    private val _state = MutableStateFlow(LiveState())
-    val state: StateFlow<LiveState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(UpdateResultState())
+    val state: StateFlow<UpdateResultState> = _state.asStateFlow()
 
     init {
-        subscribeToRealTimeUpdates()
+        updateResult()
     }
 
-    private fun subscribeToRealTimeUpdates(){
+    private fun updateResult() {
         viewModelScope.launch {
-            repository.getRealTimeLiveData()
-                .collect {result ->
+            repository.getTodayResults()
+                .collect { result->
                     when(result){
-                        is Resource.Success<*> ->{
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    liveData = result.data,
-                                    error = null
-                                )
-                            }
+                    is Resource.Success<*> -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                updateResult = result.data ?: emptyList(),
+                                error = null
+                            )
                         }
+                    }
                         is Resource.Error<*> -> {
                             _state.update {
                                 it.copy(
@@ -50,14 +47,14 @@ class LiveViewModel @Inject constructor(
                                 )
                             }
                         }
-                        is Resource.Loading<*> -> {
+                        is Resource.Loading<*> ->{
                             _state.update { it.copy(isLoading = true) }
                         }
                         else -> Unit
+
                     }
                 }
 
-
         }
     }
-}
+    }
