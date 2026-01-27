@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.example.eighteighttwod.data.remote.api.LiveApiService
 import com.example.eighteighttwod.data.remote.api.LuckyApiService
+import com.example.eighteighttwod.data.remote.api.ModernApiService
+import com.example.eighteighttwod.data.remote.api.MyanmarLotApiService
 import com.example.eighteighttwod.data.remote.api.OmenApiService
+import com.example.eighteighttwod.data.remote.api.ThaiLotClientApiService
 import com.example.eighteighttwod.data.remote.api.TwoDHistoryApiService
 import com.example.eighteighttwod.data.remote.api.UpdateResultApiService
 import com.example.eighteighttwod.utils.Constants // BASE_URL ရှိတဲ့နေရာ
@@ -50,15 +53,14 @@ object NetworkModule {
             })
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .header("Connection", "close")
                     .build()
                 chain.proceed(request)
             }
             .retryOnConnectionFailure(true)
             .protocols(listOf(Protocol.HTTP_1_1))
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
             .build()
     }
 
@@ -106,6 +108,24 @@ object NetworkModule {
     }
 
 
+    @Provides
+    @Singleton
+    fun provideModernApiService(retrofit: Retrofit): ModernApiService {
+        return retrofit.create(ModernApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyanmarLotApiService(retrofit: Retrofit): MyanmarLotApiService {
+        return retrofit.create(MyanmarLotApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThaiLotClientApiService(retrofit: Retrofit): ThaiLotClientApiService {
+        return retrofit.create(ThaiLotClientApiService::class.java)
+    }
+
     @SuppressLint("SuspiciousIndentation")
     @Provides
     @Singleton
@@ -116,10 +136,12 @@ object NetworkModule {
 
             val option = IO.Options.builder()
                 .setTransports(arrayOf("websocket"))
-                .setUpgrade(false) // Upgrade လုပ်စရာမလိုတော့ဘူး
+                .setUpgrade(false)
                 .setReconnection(true)
                 .setReconnectionAttempts(Int.MAX_VALUE)
                 .setReconnectionDelay(1000)
+                .setReconnectionDelayMax(5000) // Max 5s ပဲစောင့်ခိုင်းမယ်
+                .setTimeout(10000) // Connection Timeout 10s
                 .build()
 
                 IO.socket(uri,option)

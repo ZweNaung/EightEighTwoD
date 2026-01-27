@@ -19,6 +19,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -38,9 +41,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,7 +81,10 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -82,19 +92,23 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     liveViewModel: LiveViewModel = hiltViewModel(),
-    updateResultViewModel: UpdateResultViewModel = hiltViewModel()
+    updateResultViewModel: UpdateResultViewModel = hiltViewModel(),
+    modernViewModel: ModernViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val headerHeight = screenHeight * 0.25f
 
-
+    //live
     val liveState by liveViewModel.state.collectAsStateWithLifecycle()
     val liveData = liveState.liveData
 
-
+    //update result
     val updateResultState by updateResultViewModel.state.collectAsStateWithLifecycle()
+
+    //modern
+    val modernState by modernViewModel.state.collectAsStateWithLifecycle()
 
     val morningData = updateResultState.updateResult.find { it.session == "12:01 PM" }
     val eveningData = updateResultState.updateResult.find { it.session == "4:30 PM" }
@@ -141,7 +155,9 @@ fun HomeScreen(
                         ) {
                             DropDownTextAnimation(
                                 live2D = liveData?.twoD ?: "--",)
-                                Text( "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}",
+                                Text(
+//                                    "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}",
+                                    "Time : ${liveData?.updatedAt?.toFormattedTime() ?: "--"}",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Light
                                     )
@@ -230,13 +246,85 @@ fun HomeScreen(
                     .background(Color.DarkGray)
             )
             Spacer(modifier = Modifier.height(10.dp))
-            //Modern and internet
-            TableCardDesign(
-                nineModern = "45",
-                nineInternet = "16",
-                twoModern = "83",
-                twoInternet = "23"
-            )
+            // ==========================================
+            // Modern and Internet Section (Updated)
+            // ==========================================
+            when {
+                // ၁။ Loading ဖြစ်နေရင်
+                modernState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .padding(vertical = 5.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                            Spacer(modifier = Modifier.height(10.dp))
+                        Text("အင်တာနက် ချိတ်ဆက်နေပါတယ် ...")
+                        }
+                    }
+                }
+
+                // ၂။ Internet မရှိရင် (သို့) Error တက်ရင် ဒီ Box ပေါ်လာမယ်
+                modernState.error != null -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .background(Color(0xFFFFEBEE), RoundedCornerShape(12.dp)) // အနီဖျော့ရောင် Background
+                            .border(1.dp, Color.Red, RoundedCornerShape(12.dp)) // အနီရောင် ဘောင်
+                            .clickable {
+                                // Box ကိုနှိပ်ရင် ပြန် Refresh လုပ်မယ် (Retry Logic)
+                                modernViewModel.getModernData()
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color.Red,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "အင်တာနက် ဆက်သွယ်မှုပြတ်တောက်နေပါသည်။\nVPN ဖွင့်၍အင်တာနက်ပြန်လည်ချိတ်ဆက်ပါ။",
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "(သို့) ဤနေရာကိုနှိပ်၍ ပြန်လည်ကြိုးစားပါ",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+
+                // ၃။ Data ရရင် ပုံမှန်အတိုင်း ပြမယ်
+                else -> {
+                    TableCardDesign(
+                        nineModern = modernState.morningData?.modern ?: "--",
+                        nineInternet = modernState.morningData?.internet ?: "--",
+                        twoModern = modernState.eveningData?.modern ?: "--",
+                        twoInternet = modernState.eveningData?.internet ?: "--"
+                    )
+                }
+            }
+//            TableCardDesign(
+//                nineModern = modernState.morningData?.modern ?: "--",
+//                nineInternet = modernState.morningData?.internet ?: "--",
+//                twoModern = modernState.eveningData?.modern ?: "--",
+//                twoInternet = modernState.eveningData?.internet ?: "--"
+//            )
         }
 
     }
@@ -422,21 +510,28 @@ fun TableCardDesign(
 
 
 //hh:mm:ss
-@RequiresApi(Build.VERSION_CODES.O)
-fun String.toFormattedTime(): String {
-    return try {
-        // 1. String ကို UTC အချိန်အဖြစ် ဖတ်မယ်
-        val instant = Instant.parse(this)
 
-        // 2. Format သတ်မှတ်မယ် (hh = 12နာရီ, HH = 24နာရီ, a = AM/PM)
-        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault()) // ဖုန်းရဲ့ Local Time (Myanmar Time) ကို ယူမယ်
-
-        formatter.format(instant)
-    } catch (e: Exception) {
-        "Unknown Time" // Error တက်ရင် ပြမယ့်စာ
-    }
+@SuppressLint("SimpleDateFormat")
+fun Long.toFormattedTime(): String {
+    val sdf = SimpleDateFormat("hh:mm:ss a", Locale.ENGLISH)
+    sdf.timeZone = TimeZone.getDefault() // Myanmar Time
+    return sdf.format(Date(this))
 }
+//@RequiresApi(Build.VERSION_CODES.O)
+//fun String.toFormattedTime(): String {
+//    return try {
+//        // 1. String ကို UTC အချိန်အဖြစ် ဖတ်မယ်
+//        val instant = Instant.parse(this)
+//
+//        // 2. Format သတ်မှတ်မယ် (hh = 12နာရီ, HH = 24နာရီ, a = AM/PM)
+//        val formatter = DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.ENGLISH)
+//            .withZone(ZoneId.systemDefault()) // ဖုန်းရဲ့ Local Time (Myanmar Time) ကို ယူမယ်
+//
+//        formatter.format(instant)
+//    } catch (e: Exception) {
+//        "Unknown Time" // Error တက်ရင် ပြမယ့်စာ
+//    }
+//}
 
 //12:00 and 4:30
 @Composable

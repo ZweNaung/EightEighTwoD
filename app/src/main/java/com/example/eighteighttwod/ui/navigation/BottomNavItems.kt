@@ -1,11 +1,24 @@
 package com.example.eighteighttwod.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.LiveTv
+import androidx.compose.material.icons.filled.NightShelter
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.DynamicFeed
+import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.NightShelter
+import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.rounded.CardGiftcard
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 
 
@@ -16,40 +29,40 @@ sealed class BottomNavItems(
     val unselectedIcon: ImageVector,
 ) {
     object Home: BottomNavItems(
-        title = "Home",
+        title = "မာတိကာ",
         route = "HomeScreen",
-        selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Default.Home
+        selectedIcon = Icons.Filled.LiveTv,
+        unselectedIcon = Icons.Outlined.LiveTv
     )
     object History: BottomNavItems(
         title = "History data",
         route = "historyScreen",
-        selectedIcon = Icons.Filled.Edit,
-        unselectedIcon = Icons.Default.Edit
+        selectedIcon = Icons.Filled.Description,
+        unselectedIcon = Icons.Outlined.Description
     )
     object Lucky: BottomNavItems(
-        title = "Lucky",
+        title = "လက်ဆောင်\nဂဏန်း",
         route = "luckyScreen",
-        selectedIcon = Icons.Filled.Star,
-        unselectedIcon = Icons.Default.Star
+        selectedIcon = Icons.Filled.CardGiftcard,
+        unselectedIcon = Icons.Rounded.CardGiftcard
     )
     object Omen: BottomNavItems(
-        title = "Omen",
+        title = "အတိတ်\nစာရွက်",
         route = "omenScreen",
-        selectedIcon = Icons.Filled.Favorite,
-        unselectedIcon = Icons.Default.Favorite
+        selectedIcon = Icons.Filled.SelfImprovement,
+        unselectedIcon = Icons.Outlined.SelfImprovement
     )
     object Dream: BottomNavItems(
-        title = "Dream",
+        title = "အိမ်မက်\nကျမ်း",
         route = "dreamScreen",
-        selectedIcon = Icons.Filled.Favorite,
-        unselectedIcon = Icons.Default.Favorite
+        selectedIcon = Icons.Filled.NightShelter,
+        unselectedIcon = Icons.Outlined.NightShelter
     )
     object Other: BottomNavItems(
-        title = "Other",
+        title = "အခြား",
         route = "otherScreen",
-        selectedIcon = Icons.Filled.KeyboardArrowUp,
-        unselectedIcon = Icons.Default.KeyboardArrowUp
+        selectedIcon = Icons.Filled.DynamicFeed,
+        unselectedIcon = Icons.Outlined.DynamicFeed
     )
 
 }

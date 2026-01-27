@@ -34,6 +34,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -43,6 +44,12 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        resources {
+            // ဖိုင်နှစ်ခုထပ်နေရင် ပထမတွေ့တဲ့ file ကိုပဲ ယူမယ်လို့ ပြောတာပါ
+            pickFirst("messages/JavaOptionBundle.properties")
+        }
+    }
   }
 
 kotlin {
@@ -50,6 +57,7 @@ kotlin {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -113,4 +121,13 @@ dependencies {
     implementation ("io.socket:socket.io-client:2.1.0") {
         exclude (group = "org.json", module = "json")
     }
+
+    // Desugaring library
+     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
 }
+//configurations {
+//    all {
+//        exclude(group = "com.google.auto.value", module = "auto-value")
+//    }
+//}

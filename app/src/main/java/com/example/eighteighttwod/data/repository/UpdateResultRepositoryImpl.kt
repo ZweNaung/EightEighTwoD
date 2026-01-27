@@ -96,6 +96,19 @@ class UpdateResultRepositoryImpl @Inject constructor(
             }
         }
 
+        socket.on("daily_clear_event") {
+            Log.d("UpdateRepo", "🧹 Received daily_clear_event from Server")
+
+            // ၁။ List ထဲက Data အကုန်ဖျက်မယ်
+            currentList.clear()
+
+            // ၂။ UI ကို List အလွတ် (Empty List) ပို့လိုက်မယ်
+            // ViewModel က ဒါကိုမြင်တာနဲ့ Screen ပေါ်က List ကို ရှင်းပစ်လိုက်ပါလိမ့်မယ်
+            trySend(Resource.Success(currentList.toList()))
+        }
+
+
+
         // ၇။ Flow ပြီးဆုံးသွားရင် (ViewModel cleared) Socket Listener တွေ ဖြုတ်မယ်
         awaitClose {
             socket.off("new_2d_result")

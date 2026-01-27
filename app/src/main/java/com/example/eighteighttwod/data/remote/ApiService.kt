@@ -2,6 +2,7 @@ package com.example.eighteighttwod.data.remote
 
 import android.util.Log
 import com.example.eighteighttwod.data.remote.api.LiveApiService
+import com.example.eighteighttwod.data.remote.api.ThreeDApiService
 import com.example.eighteighttwod.data.remote.api.TwoDHistoryApiService
 import com.example.eighteighttwod.utils.Constants
 import kotlinx.serialization.json.Json
@@ -44,5 +45,6 @@ object ApiService {
 
     val twoDHistoryDApiService : TwoDHistoryApiService = retrofit.create(TwoDHistoryApiService::class.java)
 
+    val threeDApiService : ThreeDApiService = retrofit.create(ThreeDApiService::class.java)
 
 }
